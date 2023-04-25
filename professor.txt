@@ -1,0 +1,109 @@
+settings.py
+12 import os
+40 'clg',
+80 'ENGINE':'django.db.backends.mysql',
+        'NAME':'uni',
+        'host':'localhost',
+        'USER':'root',
+        'PASSWORD':'',
+        'PORT':3306
+models.py
+class clg(models.Model):
+    firstname=models.CharField(max_length=100)
+    lastname=models.CharField(max_length=100)
+    username=models.CharField(max_length=100)
+    password=models.CharField(max_length=100)
+    conformpassword=models.CharField(max_length=100)
+    gender=models.CharField(max_length=100)
+    email=models.CharField(max_length=100)
+    contactno=models.BigIntegerField()
+class meta:
+    database="clg",
+views.py
+from django.shortcuts import render
+from django.http import HttpResponse
+from.models import clg
+# Create your views here.
+def register(request):
+    if request.method=="POST":
+        firstname=request.POST["firstname"]
+        lastname=request.POST["lastname"] 
+        username=request.POST["username"]
+        password=request.POST["password"]
+        conformpassword=request.POST["conformpassword"]
+        gender=request.POST["gender"]
+        email=request.POST["email"]
+        contactno=request.POST["contactno"]
+    if clg.objects.filter(username=request.post["username"]).exists():
+        return HttpResponse("username is already exists")
+    if clg.objects.filter(email=request.post["email"]).exists():
+        return HttpResponse("email is already exist")
+    if len(firstname)<5:
+        return HttpResponse("firstname mustbe length minimum length is 5")
+    elif len(lastname)<6:
+        return HttpResponse("lastname mustbe length minimum length is 6")
+    elif len(username)<7:
+        return HttpResponse("username mustbe length minimum length is 7")
+    elif len(password)<8:     
+        return HttpResponse("password mustbe length minimum length is 8")
+    elif password!=conformpassword:
+        return HttpResponse("password mustbe length minimum length is 8")
+    elif len(contactno)!=10:
+        return HttpResponse("invalid mobile number")
+    else:
+        k=clg(firstname=firstname,lastname=lastname,username=username,password=password,conformpassword=conformpassword,gender=gender,email=email,contactno=contactno)
+        k.save();
+    return HttpResponse("record is created")
+    return render(request,"a.html")
+
+def home(request):
+    post=clg.objects.all();
+    if request.method=="POST":
+        st=request.POST.get("firstname");
+    if st!=none:
+        post=clg.objects.filter(firstname__icontains=st).values()
+        return render(request,"b.html",{'post':post})
+urls.py
+from django.contrib import admin
+from django.urls import path
+from clg import views
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('register/',views.register),
+    path('home/',views.home)
+]
+
+
+b.html
+<html>
+    <head>
+        <title>user details</title>
+    </head>
+    <body>
+        <form class="form_inline"method="post">
+        {csrf_token %}
+        <input type="text"name="firstname" placeholder="enter the firstname">
+        <input type="submit"value="search">
+        </form>
+        <table border="2">
+            <tr>
+                <th>firstname</th>
+                <th>lastname</th>
+                <th>username</th>
+                <th>gender</th>
+                <th>email</th>
+                <th>contactno</th>
+            </tr>
+            {%for i in post %}
+            <tr>
+                <td>{{i.firstname}}</td>
+                <td>{{i.lastname}}</td>
+                <td>{{i.username}}</td>
+                <td>{{i.gender}}</td>
+                <td>{{i.email}}</td>
+                <td>{{i.contact}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
